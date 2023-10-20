@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatMessage;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreChatMessageRequest;
 use App\Http\Requests\UpdateChatMessageRequest;
 
@@ -21,7 +22,7 @@ class ChatMessageController extends Controller
      */
     public function create()
     {
-        //
+        return view('create');
     }
 
     /**

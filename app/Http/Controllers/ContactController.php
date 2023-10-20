@@ -3,25 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\ChatMessage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Services\Contact\ContactService;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
+use App\Services\ChatMessage\ChatMessageService;
 
 class ContactController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $contactService;
+    protected $chatMessageService;
+
+    public function __construct(ContactService $contactService, ChatMessageService $chatMessageService)
     {
-        //
+        $this->contactService = $contactService;
+        $this->chatMessageService = $chatMessageService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function getContacts(Request $request)
     {
-        //
+        $userId = Auth::id();
+
+        $contacts = $this->contactService->getAllByUserId($userId);
+
+        collect($contacts)->map(function ($contact) use ($userId) {
+            $countContacts = $this->chatMessageService->getNumberOfUnreadChatMessages($userId, $contact['contact_user2_id']);
+            $contact['numberOfUnreadChatMessages'] = $countContacts;
+        });
+
+        return $contacts;
     }
 
     /**
@@ -45,7 +57,7 @@ class ContactController extends Controller
      */
     public function edit(Contact $contact)
     {
-        //
+
     }
 
     /**

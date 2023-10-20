@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\ContactController;
+use App\Models\ChatMessage;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -24,18 +28,42 @@ Route::get('/', function () {
     ]);
 });
 
+// Route::middleware([
+//     'auth:sanctum',
+//     config('jetstream.auth_session'),
+//     'verified',
+// ])->group(function () {
+//     Route::get('/dashboard', function () {
+//         return Inertia::render('Dashboard');
+//     })->name('dashboard');
+// });
+
+// Route::middleware(['auth:sanctum'])->group(function () {
+//     Route::get('/', function () {
+//         return Inertia::render('Dashboard');
+//     })->name('dashboard');
+// });
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/messages/{user2Id}', [ChatController::class, 'getMessages'])->name('messages.getMessages');
+    Route::post('/messages', [ChatController::class, 'createNewMessage'])->name('messages.store');
+    Route::get('/contacts', [ContactController::class, 'getContacts'])->name('contacts.getContacts');
+});
+
+// Route::middleware([
+//     'auth:sanctum',
+//     config('jetstream.auth_session'),
+// ])->group(function () {
+//     Route::get('/', function () {
+//         return Inertia::render('Chat.container');
+//     })->name('chat.container');
+// });
+
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-});
-
-Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+        return Inertia::render('Chats/container');
+    })->name('chats.names');
 });

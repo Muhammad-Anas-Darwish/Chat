@@ -2,8 +2,8 @@
 
 return [
     'message_status' => [
-        'Successfully Sent' => 'successfully_sent',
-        'Received' => 'Received',
-        'Recipient Read' => 'recipient_read',
+        'successfully_sent' => 'Successfully Sent',
+        'received' => 'Received',
+        'recipient_read' => 'Recipient Read',
     ],
 ];
