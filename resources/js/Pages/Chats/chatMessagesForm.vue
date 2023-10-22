@@ -10,15 +10,18 @@ const props = defineProps({
     },
 });
 
-const form = useForm({
-    message: '',
-    receiver_id: props.selectedContact['contact_user2_id'],
-});
+const emit = defineEmits(['get-messages']);
+
+const message = ref('');
 
 const submit = () => {
-    axios.post('/messages/', form)
+    axios.post('/messages/', {
+        message: message.value,
+        receiver_id: props.selectedContact['contact_user2_id'],
+    })
     .then(res => {
-        form.message = "";
+        message.value = "";
+        emit('get-messages', '/messages/' + props.selectedContact['contact_user2_id'], true);
         console.log(res);
     })
     .catch(error => {
@@ -31,13 +34,13 @@ const submit = () => {
     <form @submit.prevent="submit">
         <div class="flex gap-4 w-full h-full">
             <TextInput
-                v-model="form.message"
+                v-model="message"
                 type="text"
                 class="mt-1 block w-full outline-none"
                 required
                 autofocus
             />
-            <PrimaryButton class="" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+            <PrimaryButton class="" >
                 Send
             </PrimaryButton>
         </div>

@@ -28,9 +28,9 @@ function getChoicesReceiver(value) {
                 </div>
             </aside>
 
-            <div class="sm:ml-64 w-full p-3 h-full">
+            <div class="sm:ml-64 w-full p-1 h-full overflow-x-hidden">
                 <notChosenContainer v-if="selectedContact == false" />
-                <chatMessagesContainer v-else :selected-contact="selectedContact" />
+                <chatMessagesContainer v-else :selected-contact.sync="selectedContact" />
             </div>
         </div>
     </AppLayout>
