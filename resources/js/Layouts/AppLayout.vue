@@ -281,7 +281,7 @@ const logout = () => {
             </header>
 
             <!-- Page Content -->
-            <main class="h-[calc(100vh-4rem)]">
+            <main class="">
                 <slot />
             </main>
         </div>
