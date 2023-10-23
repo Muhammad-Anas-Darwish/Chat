@@ -1,6 +1,6 @@
 <script setup>
-import { useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 import TextInput from '@/Components/TextInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 
@@ -32,15 +32,15 @@ const submit = () => {
 
 <template>
     <form @submit.prevent="submit">
-        <div class="flex gap-4 w-full h-full">
+        <div class="flex gap-1 w-full h-full">
             <TextInput
                 v-model="message"
                 type="text"
-                class="mt-1 block w-full outline-none"
+                class="block w-full outline-none"
                 required
                 autofocus
             />
-            <PrimaryButton class="" >
+            <PrimaryButton class="">
                 Send
             </PrimaryButton>
         </div>

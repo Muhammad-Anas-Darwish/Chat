@@ -64,6 +64,6 @@ Route::middleware([
     config('jetstream.auth_session'),
 ])->group(function () {
     Route::get('/', function () {
-        return Inertia::render('Chats/container');
+        return Inertia::render('Chats/Container');
     })->name('chats.names');
 });

@@ -1,8 +1,8 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import namesContainer from '@/Pages/Chats/namesContainer.vue';
-import notChosenContainer from '@/Pages/Chats/notChosenContainer.vue';
-import ChatMessagesContainer from './chatMessagesContainer.vue';
+import NamesContainer from '@/Pages/Chats/NamesContainer.vue';
+import EmptyPageContainer from '@/Components/EmptyPageContainer.vue';
+import ChatMessagesContainer from '@/Pages/Chats/ChatMessagesContainer.vue';
 import { ref } from 'vue';
 
 const selectedContact = ref([]);
@@ -29,7 +29,9 @@ function getChoicesReceiver(value) {
             </aside>
 
             <div class="sm:ml-64 w-full p-1 h-full overflow-x-hidden">
-                <notChosenContainer v-if="selectedContact == false" />
+                <EmptyPageContainer v-if="selectedContact == false" >
+                    Select a chat to start messaging
+                </EmptyPageContainer>
                 <chatMessagesContainer v-else :selected-contact.sync="selectedContact" />
             </div>
         </div>

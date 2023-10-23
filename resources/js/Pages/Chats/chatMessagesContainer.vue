@@ -1,7 +1,8 @@
 <script setup>
-import ChatMessagesForm from './chatMessagesForm.vue';
-import messagesContainer from './messagesContainer.vue';
-import { ref, onMounted } from 'vue'
+import EmptyPageContainer from '@/Components/EmptyPageContainer.vue';
+import ChatMessagesForm from '@/Pages/Chats/ChatMessagesForm.vue';
+import messagesContainer from './MessagesContainer.vue';
+import { ref, onMounted, watch } from 'vue'
 
 const props = defineProps({
     selectedContact: {
@@ -9,7 +10,7 @@ const props = defineProps({
     },
 });
 
-const messages = ref([]);
+const messages = ref(null);
 const nextMessagesPage = ref('');
 
 function getMessages(url, clear = false) {
@@ -27,12 +28,18 @@ function getMessages(url, clear = false) {
     });
 }
 
+watch(() => props.selectedContact, (newVal, oldVal) => {
+    getMessages('/messages/' + newVal.contact_user2_id, true);
+});
 </script>
 
 <template>
 <div class="flex flex-col h-full">
     <div class="bg-gray-800 h-full overflow-y-scroll">
-        <messagesContainer @get-messages="getMessages" :next_page_url.sync="nextMessagesPage" :messages.sync="messages" :contact_user2_id.sync="props.selectedContact['contact_user2_id']" />
+        <EmptyPageContainer v-if="messages == []">
+            Send a message
+        </EmptyPageContainer>
+        <messagesContainer v-else @get-messages="getMessages" :next_page_url.sync="nextMessagesPage" :messages.sync="messages" :contact_user2_id.sync="props.selectedContact['contact_user2_id']" />
     </div>
     <div class="mt-1">
         <ChatMessagesForm @get-messages="getMessages" :selected-contact.sync="selectedContact" />
