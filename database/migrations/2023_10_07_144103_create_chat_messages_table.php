@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreign('receiver_id')->references('id')->on('users');
 
             $table->text('message');
-            $table->string('status');
+            $table->string('status')->default(config('choices.message_status')['successfully_sent']);
 
             $table->timestamps();
         });

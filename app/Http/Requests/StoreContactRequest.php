@@ -11,7 +11,7 @@ class StoreContactRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,8 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'contact_user2_id' => 'required|exists:users,id',
+            'name' => 'required|string|max:64',
         ];
     }
 }

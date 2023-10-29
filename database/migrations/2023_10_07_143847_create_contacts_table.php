@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('contact_user1_id')->references('id')->on('users');
             $table->foreign('contact_user2_id')->references('id')->on('users');
 
-            $table->string('name');
+            $table->string('name', 64);
             $table->timestamps();
         });
     }

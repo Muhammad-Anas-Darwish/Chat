@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlockController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\ContactController;
@@ -47,7 +48,12 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/messages/{user2Id}', [ChatController::class, 'getMessages'])->name('messages.getMessages');
     Route::post('/messages', [ChatController::class, 'createNewMessage'])->name('messages.store');
+
     Route::get('/contacts', [ContactController::class, 'getContacts'])->name('contacts.getContacts');
+
+    Route::get('/blocks', [BlockController::class, 'getBlocks'])->name('blocks.getBlocks');
+    Route::delete('/blocks/{user2Id}', [BlockController::class, 'destroy'])->name('blocks.destroy');
+    Route::resource('blocks', BlockController::class)->only(['store']);
 });
 
 // Route::middleware([

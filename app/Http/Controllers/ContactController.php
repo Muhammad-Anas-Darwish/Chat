@@ -41,23 +41,10 @@ class ContactController extends Controller
      */
     public function store(StoreContactRequest $request)
     {
-        //
-    }
+        $data = $request->validated();
+        $userId = Auth::id();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Contact $contact)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Contact $contact)
-    {
-
+        return $this->contactService->create($data, $userId);
     }
 
     /**
@@ -65,7 +52,9 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-        //
+        $data = $request->validated();
+
+        return $this->contactService->update($contact, $data);
     }
 
     /**
@@ -73,6 +62,6 @@ class ContactController extends Controller
      */
     public function destroy(Contact $contact)
     {
-        //
+        return $this->contactService->destroy($contact);
     }
 }

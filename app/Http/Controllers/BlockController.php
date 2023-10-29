@@ -5,23 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Block;
 use App\Http\Requests\StoreBlockRequest;
 use App\Http\Requests\UpdateBlockRequest;
+use App\Services\Block\BlockService;
+use Illuminate\Support\Facades\Auth;
 
 class BlockController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected $blockService;
+
+    public function __construct(BlockService $blockService)
     {
-        //
+        $this->blockService = $blockService;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Get all blocks of user
      */
-    public function create()
+    public function getBlocks()
     {
-        //
+        $userId = Auth::id();
+        return $this->blockService->getBlocks($userId);
     }
 
     /**
@@ -29,38 +31,19 @@ class BlockController extends Controller
      */
     public function store(StoreBlockRequest $request)
     {
-        //
-    }
+        $data = $request->validated();
+        $userId = Auth::id();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Block $block)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Block $block)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateBlockRequest $request, Block $block)
-    {
-        //
+        return $this->blockService->create($data, $userId);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Block $block)
+    public function destroy($user2Id)
     {
-        //
+        $userId = Auth::id();
+
+        return $this->blockService->destroy($userId, $user2Id);
     }
 }

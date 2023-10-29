@@ -1,5 +1,6 @@
 <script setup>
 import MessagesSkeleton from '@/Pages/Chats/Skeletons/MessagesSkeleton.vue';
+import CenterMessage from '@/Pages/Chats/Parts/CenterMessage.vue';
 import { ref, onMounted, watch, onUpdated} from 'vue';
 
 const props = defineProps({
@@ -9,7 +10,7 @@ const props = defineProps({
     next_page_url: {
         required: true
     },
-    contact_user2_id: {
+    contact: {
         required: true
     }
 });
@@ -25,7 +26,7 @@ function getNextMessages() {
 }
 
 onMounted(() => {
-    emit('get-messages', '/messages/' + props.contact_user2_id, true);
+    emit('get-messages', '/messages/' + props.contact['contact_user2_id'], true);
 });
 
 onUpdated(() => {
@@ -36,9 +37,13 @@ onUpdated(() => {
 <template>
     <div class="flex flex-col-reverse justify-end gap-2 p-2" ref="messagesContainer">
         <MessagesSkeleton v-if="messages === null" />
-        <template v-else v-for="message in messages" :key="message.id">
-            <p v-if="contact_user2_id === message.sender_id" class="rounded-lg text-2xl bg-blue-500 text-white px-2 break-words max-w-[85%] md:max-w-[70%] w-fit">{{ message.message }}</p>
-            <p v-else class="rounded-lg text-2xl bg-green-700 text-white px-2 break-words  max-w-[85%] md:max-w-[70%] w-fit ml-auto">{{ message.message }}</p>
+        <template v-else>
+            <CenterMessage v-if="props.contact['is_blocked_by_me']">You blocked this contact.</CenterMessage>
+            <CenterMessage v-else-if="props.contact['is_blocking_me'] === 1">You blocked from this contact.</CenterMessage>
+            <template v-for="message in messages" :key="message.id">
+                    <p v-if="contact['contact_user2_id'] === message.sender_id" class="rounded-lg text-2xl bg-blue-500 text-white px-2 break-words max-w-[85%] md:max-w-[70%] w-fit">{{ message.message }}</p>
+                    <p v-else class="rounded-lg text-2xl bg-green-700 text-white px-2 break-words  max-w-[85%] md:max-w-[70%] w-fit ml-auto">{{ message.message }}</p>
+            </template>
         </template>
     </div>
 </template>
