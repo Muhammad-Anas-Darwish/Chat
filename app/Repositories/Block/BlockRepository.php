@@ -2,34 +2,48 @@
 
 namespace App\Repositories\Block;
 
-use App\Http\Requests\StoreBlockRequest;
 use App\Models\Block;
+use App\Repositories\BaseRepository;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class BlockRepository implements BlockRepositoryInterface
+class BlockRepository extends BaseRepository implements BlockRepositoryInterface
 {
-    public function getBlocks($userId)
+    protected $model;
+
+    public function __construct(Block $model)
     {
-        return Block::where('blocker_id', $userId)->orWhere('banned_id', $userId)->get();
+        $this->model = $model;
     }
 
-    public function find($blockerId, $bannedId)
+    public function getBlocks(int $userId): Model
     {
-        return Block::where('blocker_id', $blockerId)->where('banned_id', $bannedId)->get();
+        return $this->model->where('blocker_id', $userId)->orWhere('banned_id', $userId)->get();
     }
 
-    public function create($blockerId, $bannedId)
+    public function find(int $blockerId, int $bannedId): ?Model
     {
-        $block = $this->find($blockerId, $bannedId);
+        $block = $this->model->where('blocker_id', $blockerId)->where('banned_id', $bannedId)->first();
+        return $block;
+    }
 
-        // if is exisit
-        if (!$block->isEmpty())
+    public function create(array $data): ?Model
+    {
+        $block = $this->find($data['blocker_id'], $data['banned_id']);
+
+        if ($block !== null)
             return $block;
 
-        return Block::create(['blocker_id' => $blockerId, 'banned_id' => $bannedId]);
+        return parent::create($data);
     }
 
-    public function destroy($userId, $user2Id)
+    public function delete(int $blockerId, int $bannedId): ?bool
     {
-        return Block::where('blocker_id', $userId)->where('banned_id', $user2Id)->delete();
+        return $this->find($blockerId, $bannedId)->delete();
+    }
+
+    public function isBlocked(int $senderId, int $receiverId): ?bool
+    {
+        return ($this->find($senderId, $receiverId) !== null);
     }
 }

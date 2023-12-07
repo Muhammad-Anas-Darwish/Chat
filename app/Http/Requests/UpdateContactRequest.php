@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Contact;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateContactRequest extends FormRequest
@@ -11,7 +13,15 @@ class UpdateContactRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // TODO edit this
+        $contactId = $this->route('contact'); // get contact id from route
+        $contact = Contact::findOrFail($contactId); // get contact
+
+        // Check if contact_user1_id is authorized by authorize
+        if ($contact->contact_user1_id === Auth::id())
+            return true;
+
+        return false;
     }
 
     /**

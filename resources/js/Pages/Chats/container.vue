@@ -1,34 +1,118 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import NamesContainer from '@/Pages/Chats/NamesContainer.vue';
+import { Link } from '@inertiajs/vue3';
+import AsideContainer from '@/Pages/Chats/AsideContainer.vue';
 import EmptyPageContainer from '@/Components/EmptyPageContainer.vue';
 import ChatMessagesContainer from '@/Pages/Chats/ChatMessagesContainer.vue';
-import { ref } from 'vue';
+import { ref, onMounted, watch, watchEffect } from 'vue';
 
-const selectedContact = ref([]);
 
-function getChoicesReceiver(value) {
+const contacts = ref(null);
+const selectedContact = ref(false);
+
+function updateChoicesReceiver(value) {
     selectedContact.value = value;
 }
+
+const getContacts = () => {
+    axios.get(route('contacts.getContacts')).then(response => {
+        contacts.value = response.data;
+    }).catch(error => {
+        console.log(error);
+    });
+};
+
+onMounted(() => {
+    getContacts();
+});
+
+
+// const messages = ref([]);
+
+// function getMessages(url) {
+//     axios.get(url)
+//     .then(res => {
+//         messages.value = res['data']['data'];
+//         console.log("get messages");
+//     })
+//     .catch(error => {
+//         console.log(error);
+//     });
+// }
+
+// function connect() {
+//     console.log('connect');
+//     if (selectedContact.value['contact_user2_id']) {
+//         console.log('connecting success')
+//         let vm = this;
+//         getMessages('/messages/' + selectedContact.value['contact_user2_id']);
+
+//         window.Echo.private("chat.8").listen('.message.new', e => {
+//             console.log('hiiii');
+//             console.log('+' + e);
+//             vm.getMessages('/messages/' + selectedContact.value['contact_user2_id']);
+//         });
+//     }
+// }
+
+// watch(selectedContact, (val, oldVal) => {
+//     console.log('watch');
+//     connect();
+// });
+
+// onMounted(() => {
+//     console.log('mounted');
+//     connect();
+// });
 </script>
 
 <template>
     <AppLayout title="Chats">
         <div class="h-[calc(100vh-4rem)] flex justify-between w-full">
-            <aside id="default-sidebar" class="fixed top-16 left-0 bottom-0 z-40 w-64 h-full transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
-                <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
-                    <ul class="space-y-2 font-medium">
-                        <namesContainer @update-selected-contact="getChoicesReceiver" />
-                    </ul>
-                </div>
-            </aside>
+            <AsideContainer :contacts.sync="contacts" :selected-contact="selectedContact" @update-selected-contact="updateChoicesReceiver" />
 
-            <div class="sm:ml-64 w-full p-1 h-full overflow-x-hidden">
+            <div class="w-full p-1 h-full overflow-x-hidden sm:ml-64">
+                <template v-for="message in messages" :key="message.id">
+                    {{message.message}}
+                    <br>
+                </template>
+
+                <button @click="getMessages('messages/' + selectedContact['contact_user2_id'] )">get</button>
                 <EmptyPageContainer v-if="selectedContact == false" >
                     Select a chat to start messaging
                 </EmptyPageContainer>
-                <chatMessagesContainer v-else :selected-contact.sync="selectedContact" />
+                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" :selected-contact.sync="selectedContact" />
             </div>
         </div>
     </AppLayout>
 </template>
+
+
+
+
+<style>
+/* start scrollbar */
+/* width */
+.overflow-y-scroll::-webkit-scrollbar {
+    width: 3px;
+}
+
+/* Track */
+.overflow-y-scroll::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 1rem;
+}
+
+/* Handle */
+.overflow-y-scroll::-webkit-scrollbar-thumb {
+    --tw-text-opacity: 1;
+    background: rgb(156 163 175 / var(--tw-text-opacity));
+    border-radius: 1rem;
+}
+
+/* Handle on hover */
+.overflow-y-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgb(156 163 175 / var(--tw-text-opacity));
+}
+/* end scrollbar */
+</style>

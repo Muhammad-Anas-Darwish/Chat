@@ -39,37 +39,32 @@ Route::get('/', function () {
 //     })->name('dashboard');
 // });
 
-// Route::middleware(['auth:sanctum'])->group(function () {
-//     Route::get('/', function () {
-//         return Inertia::render('Dashboard');
-//     })->name('dashboard');
-// });
-
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/messages/{user2Id}', [ChatController::class, 'getMessages'])->name('messages.getMessages');
+    Route::get('/messages/{user2Id:int}', [ChatController::class, 'getMessages'])->name('messages.getMessages');
     Route::post('/messages', [ChatController::class, 'createNewMessage'])->name('messages.store');
 
+    Route::get('/contacts/{id}', [ContactController::class, 'getContact'])->name('contacts.getContact')->where('id', '[0-9]+');
     Route::get('/contacts', [ContactController::class, 'getContacts'])->name('contacts.getContacts');
+    Route::resource('contacts', ContactController::class)->only(['store', 'update', 'destroy']);
 
     Route::get('/blocks', [BlockController::class, 'getBlocks'])->name('blocks.getBlocks');
     Route::delete('/blocks/{user2Id}', [BlockController::class, 'destroy'])->name('blocks.destroy');
     Route::resource('blocks', BlockController::class)->only(['store']);
 });
 
-// Route::middleware([
-//     'auth:sanctum',
-//     config('jetstream.auth_session'),
-// ])->group(function () {
-//     Route::get('/', function () {
-//         return Inertia::render('Chat.container');
-//     })->name('chat.container');
-// });
-
 Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-])->group(function () {
-    Route::get('/', function () {
-        return Inertia::render('Chats/Container');
-    })->name('chats.names');
-});
+        'auth:sanctum',
+        config('jetstream.auth_session'),
+    ])->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Chats/Container');
+        })->name('chats.container');
+
+        Route::get('/contacts/create', function () {
+            return Inertia::render('Contacts/Create');
+        })->name('contacts.create');
+
+        Route::get('/contacts/edit/{contactId}', function () {
+            return Inertia::render('Contacts/Edit');
+        })->name('contacts.edit');
+    });

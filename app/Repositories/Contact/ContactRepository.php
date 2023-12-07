@@ -3,20 +3,31 @@
 namespace App\Repositories\Contact;
 
 use App\Models\Contact;
-use App\Models\ChatMessage;
 use Illuminate\Support\Facades\DB;
-use App\Http\Requests\StoreContactRequest;
-use App\Repositories\ChatMessage\ChatMessageRepository;
+use App\Repositories\BaseRepository;
+use App\Exceptions\ContactAlreadyExistsException;
+use App\Repositories\User\UserRepositoryInterface;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
-class ContactRepository implements ContactRepositoryInterface
+class ContactRepository extends BaseRepository implements ContactRepositoryInterface
 {
+    protected $model;
+    protected $userRepository;
+
+    public function __construct(Contact $model, UserRepositoryInterface $userRepository)
+    {
+        $this->model = $model;
+        $this->userRepository = $userRepository;
+    }
+
     /**
      *
      * @description Get all contacts by user id
      */
-    public function getAllByUserId(int $userId)
+    public function getAllByUserId(int $userId): Collection
     {
-        return Contact::where('contact_user1_id', $userId)
+        return $this->model->where('contact_user1_id', $userId)
             ->leftJoin('blocks', function ($join) use ($userId) {
                 $join->on('blocks.banned_id', '=', 'contacts.contact_user2_id')
                     ->where('blocks.blocker_id', $userId);
@@ -27,6 +38,7 @@ class ContactRepository implements ContactRepositoryInterface
             })
             ->with('contactUser2')
             ->select(
+                'contacts.id',
                 'contact_user2_id',
                 'name',
                 DB::raw('(blocks.id IS NOT NULL AND blocks.blocker_id = '.$userId.') AS is_blocked_by_me'),
@@ -35,18 +47,23 @@ class ContactRepository implements ContactRepositoryInterface
             ->get();
     }
 
-    public function create($data)
+    public function getContact(int $user1Id, int $user2Id): Collection
     {
-        return Contact::create($data);
+        return $this->model->where('contact_user1_id', $user1Id)->where('contact_user2_id', $user2Id)->get();
     }
 
-    public function update(Contact $contact, $data)
+    public function create(array $data): ?Model
     {
-        return $contact->update($data);
-    }
+        // if is exisit
+        $contact = $this->getContact($data['contact_user1_id'], $data['contact_user2_id']);
+        if (!$contact->isEmpty())
+            throw new ContactAlreadyExistsException();
 
-    public function destroy(Contact $contact)
-    {
-        return $contact->delete();
+        return parent::create($data);
+        // return Contact::create([
+        //     'contact_user1_id' => $data['contact_user1_id'],
+        //     'contact_user2_id' => $data['contact_user2_id'],
+        //     'name' => $data['name'] ?? $this->userRepository->find($data['contact_user2_id']),
+        // ]);
     }
 }

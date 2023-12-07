@@ -13,8 +13,14 @@ const props = defineProps({
     },
 });
 
-const messages = ref(null);
+const emit = defineEmits(['reloadContacts', 'toggleContact']);
+
+const messages = ref([]);
 const nextMessagesPage = ref('');
+
+function toggleContact() {
+    emit('toggleContact', false)
+}
 
 function getMessages(url, clear = false) {
     axios.get(url)
@@ -24,7 +30,7 @@ function getMessages(url, clear = false) {
         else
             messages.value = messages.value.concat(res['data']['data']); // append new messages to old messages
         nextMessagesPage.value = res['data']['next_page_url'];
-        console.log(messages.value);
+        // console.log(messages.value);
     })
     .catch(error => {
         console.log(error);
@@ -53,6 +59,16 @@ function unBlockContact() {
     });
 }
 
+function deleteContact() {
+    axios.delete(route('contacts.destroy', props.selectedContact.id))
+    .then(res => {
+        emit('reloadContacts');
+    })
+    .catch(error => {
+        console.log(error);
+    });
+}
+
 watch(() => props.selectedContact, (newVal, oldVal) => {
     getMessages('/messages/' + newVal.contact_user2_id, true);
 });
@@ -64,6 +80,7 @@ watch(() => props.selectedContact, (newVal, oldVal) => {
     <div class="bg-gray-700 flex justify-between items-center py-1 px-3">
         <!-- info -->
         <div class="flex justify-start items-center overflow-hidden">
+            <button @click="toggleContact" class="mr-10 text-xl">-</button>
             <img class="w-8 h-8 rounded-full" :src="selectedContact.contact_user2.profile_photo_path ?? selectedContact.contact_user2.profile_photo_url" alt="">
             <div class="flex flex-col ml-3 overflow-hidden">
                 <span class="whitespace-nowrap overflow-hidden truncate font-bold text-white">{{ selectedContact.name }}</span>
@@ -81,7 +98,7 @@ watch(() => props.selectedContact, (newVal, oldVal) => {
 
                 <template #content>
                     <div class="block px-4 py-2 text-xs text-gray-400">
-                        Manage Account
+                        Manage Contact
                     </div>
 
                     <form v-if="selectedContact.is_blocked_by_me" @submit.prevent="unBlockContact">
@@ -95,9 +112,15 @@ watch(() => props.selectedContact, (newVal, oldVal) => {
                         </DropdownLink>
                     </form>
 
-                    <DropdownLink :href="route('profile.show')">
-                        Profile
+                    <DropdownLink @click="" :href="route('contacts.edit', props.selectedContact['id'])">
+                        Edit Contact
                     </DropdownLink>
+
+                    <form @submit.prevent="deleteContact">
+                        <DropdownLink as="button">
+                            Delete chat
+                        </DropdownLink>
+                    </form>
 
                     <div class="border-t border-gray-200 dark:border-gray-600" />
 
@@ -113,11 +136,11 @@ watch(() => props.selectedContact, (newVal, oldVal) => {
     <!-- main container -->
     <div class="bg-gray-800 h-full overflow-y-scroll">
         <!-- empty container -->
-        <EmptyPageContainer v-if="messages == []">
+        <EmptyPageContainer v-if="messages.length === 0">
             Send a message
         </EmptyPageContainer>
         <!-- messages container -->
-        <messagesContainer v-else @get-messages="getMessages" :next_page_url.sync="nextMessagesPage" :messages.sync="messages" :contact.sync="props.selectedContact" />
+        <MessagesContainer v-else @get-messages="getMessages" :next_page_url.sync="nextMessagesPage" :messages.sync="messages" :contact.sync="props.selectedContact" />
     </div>
     <!-- send message form container -->
     <div v-if="!selectedContact['is_blocked_by_me'] && !selectedContact['is_blocking_me']" class="mt-1">

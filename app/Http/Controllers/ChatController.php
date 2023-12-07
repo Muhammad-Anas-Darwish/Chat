@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChatMessage;
+use App\Events\NewChatMessage;
 use Illuminate\Support\Facades\Auth;
+use App\Exceptions\BlockedContactException;
 use App\Http\Requests\StoreChatMessageRequest;
-use App\Http\Requests\UpdateChatMessageRequest;
-use App\Services\ChatMessage\ChatMessageService;
+use App\Repositories\ChatMessage\ChatMessageRepositoryInterface;
 
 class ChatController extends Controller
 {
-    protected $chatMessageService;
-
-    public function __construct(ChatMessageService $chatMessageService)
+    protected $chatMessageRepository;
+    public function __construct(ChatMessageRepositoryInterface $chatMessageRepository)
     {
-        $this->chatMessageService = $chatMessageService;
+        $this->chatMessageRepository = $chatMessageRepository;
     }
 
     public function getMessages($user2Id)
     {
         $user1Id = Auth::id();
 
-        return $this->chatMessageService->getMessages($user1Id, $user2Id);
+        return $this->chatMessageRepository->getMessages($user1Id, $user2Id);
     }
 
     /**
@@ -30,7 +29,15 @@ class ChatController extends Controller
     public function createNewMessage(StoreChatMessageRequest $request)
     {
         $data = $request->validated();
+        $data['sender_id'] = Auth::id();
 
-        return $this->chatMessageService->create($data, Auth::id());
+        try {
+            $message = $this->chatMessageRepository->create($data);
+            broadcast(new NewChatMessage($message))->toOthers();
+            return $message;
+        }
+        catch (BlockedContactException $excption) {
+            return response()->json($excption->getMessage(), 403); // TODO ?remove this
+        }
     }
 }

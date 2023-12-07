@@ -2,16 +2,14 @@
 
 namespace App\Repositories\Contact;
 
-use App\Http\Requests\StoreContactRequest;
-use App\Models\Contact;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 interface ContactRepositoryInterface
 {
-    public function getAllByUserId(int $userId);
+    public function getAllByUserId(int $userId): Collection;
 
-    public function create($data);
+    public function getContact(int $user1Id, int $user2Id): Collection;
 
-    public function update(Contact $contact, $data);
-
-    public function destroy(Contact $contact);
+    public function create(array $data): ?Model;
 }

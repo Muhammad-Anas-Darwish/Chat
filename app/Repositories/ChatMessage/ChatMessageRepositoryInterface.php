@@ -2,14 +2,17 @@
 
 namespace App\Repositories\ChatMessage;
 
-use App\Models\ChatMessage;
-use App\Http\Requests\StoreChatMessageRequest;
+use App\Enum\MessageStatusEnum;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 interface ChatMessageRepositoryInterface
 {
-    public function create(array $request);
+    public function changeMessagesStatus(int $user1Id, int $user2Id, MessageStatusEnum $status): void;
 
-    public function getMessages($user1Id, $user2Id);
+    public function create(array $data): ?Model;
 
-    public function getNumberOfUnreadChatMessages(int $user1Id, int $user2Id);
+    public function getMessages(int $user1Id, int $user2Id): LengthAwarePaginator;
+
+    public function getNumberOfUnreadChatMessages(int $user1Id, int $user2Id): int;
 }

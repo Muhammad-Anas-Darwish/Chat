@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enum\MessageStatusEnum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -23,7 +24,7 @@ class ChatMessageFactory extends Factory
             'sender_id' => $user1->id,
             'receiver_id' => $this->faker->unique()->randomElement(User::whereNotIn('id', [$user1->id])->pluck('id')),
             'message' => $this->faker->text(),
-            'status' => $this->faker->randomElement(array_values(config('choices.message_status'))),
+            'status' => $this->faker->randomElement(MessageStatusEnum::values()),
         ];
     }
 }

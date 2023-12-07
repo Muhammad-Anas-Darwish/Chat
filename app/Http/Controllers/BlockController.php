@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Block;
 use App\Http\Requests\StoreBlockRequest;
-use App\Http\Requests\UpdateBlockRequest;
-use App\Services\Block\BlockService;
+use App\Repositories\Block\BlockRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 
 class BlockController extends Controller
 {
-    protected $blockService;
-
-    public function __construct(BlockService $blockService)
+    public function __construct(protected BlockRepositoryInterface $blockRepository)
     {
-        $this->blockService = $blockService;
+        $this->blockRepository = $blockRepository;
     }
 
     /**
@@ -23,7 +19,7 @@ class BlockController extends Controller
     public function getBlocks()
     {
         $userId = Auth::id();
-        return $this->blockService->getBlocks($userId);
+        return $this->blockRepository->getBlocks($userId);
     }
 
     /**
@@ -32,18 +28,16 @@ class BlockController extends Controller
     public function store(StoreBlockRequest $request)
     {
         $data = $request->validated();
-        $userId = Auth::id();
+        $data['blocker_id'] = Auth::id();
 
-        return $this->blockService->create($data, $userId);
+        return $this->blockRepository->create($data);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($user2Id)
+    public function destroy(int $bannedId)
     {
-        $userId = Auth::id();
-
-        return $this->blockService->destroy($userId, $user2Id);
+        return $this->blockRepository->delete(Auth::id(), $bannedId);
     }
 }

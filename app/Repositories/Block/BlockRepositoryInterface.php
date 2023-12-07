@@ -4,14 +4,17 @@ namespace App\Repositories\Block;
 
 use App\Http\Requests\StoreBlockRequest;
 use App\Models\Block;
+use Illuminate\Database\Eloquent\Model;
 
 interface BlockRepositoryInterface
 {
-    public function getBlocks($userId);
+    public function getBlocks(int $userId): Model;
 
-    public function find($blockerId, $bannedId);
+    public function find(int $blockerId, int $bannedId): ?Model;
 
-    public function create($blockerId, $bannedId);
+    public function create(array $data): ?Model;
 
-    public function destroy($userId, $user2Id);
+    public function delete(int $blockerId, int $bannedId): ?bool;
+
+    public function isBlocked(int $senderId, int $receiverId): ?bool;
 }

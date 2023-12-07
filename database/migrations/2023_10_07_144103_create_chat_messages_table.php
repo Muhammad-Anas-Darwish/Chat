@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\MessageStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -21,7 +22,7 @@ return new class extends Migration
             $table->foreign('receiver_id')->references('id')->on('users');
 
             $table->text('message');
-            $table->string('status')->default(config('choices.message_status')['successfully_sent']);
+            $table->string('status')->default(MessageStatusEnum::SENT);
 
             $table->timestamps();
         });

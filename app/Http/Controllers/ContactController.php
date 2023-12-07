@@ -2,34 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contact;
-use App\Models\ChatMessage;
-use Illuminate\Http\Request;
+use App\Exceptions\ContactAlreadyExistsException;
+use App\Http\Requests\DeleteContactRequest;
 use Illuminate\Support\Facades\Auth;
-use App\Services\Contact\ContactService;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
-use App\Services\ChatMessage\ChatMessageService;
+use App\Repositories\ChatMessage\ChatMessageRepositoryInterface;
+use App\Repositories\Contact\ContactRepositoryInterface;
+use App\Repositories\User\UserRepositoryInterface;
 
 class ContactController extends Controller
 {
-    protected $contactService;
-    protected $chatMessageService;
+    protected $contactRepository;
+    protected $userRepository;
+    protected $chatMessageRepository;
 
-    public function __construct(ContactService $contactService, ChatMessageService $chatMessageService)
+    public function __construct(ContactRepositoryInterface $contactRepository, UserRepositoryInterface $userRepository, ChatMessageRepositoryInterface $chatMessageRepository)
     {
-        $this->contactService = $contactService;
-        $this->chatMessageService = $chatMessageService;
+        $this->contactRepository = $contactRepository;
+        $this->userRepository = $userRepository;
+        $this->chatMessageRepository = $chatMessageRepository;
     }
 
-    public function getContacts(Request $request)
+    public function getContact($contactId)
     {
+        // TODO add validate with request
         $userId = Auth::id();
 
-        $contacts = $this->contactService->getAllByUserId($userId);
+        $contact = $this->contactRepository->findById($contactId);
+
+        if ($contact['contact_user1_id'] !== $userId)
+            return response()->json(['error' => 'Unauthorized access'], 403);
+
+        return $contact;
+    }
+
+    public function getContacts()
+    {
+        $userId = Auth::id();
+        // TODO edit this code
+
+        $contacts = $this->contactRepository->getAllByUserId($userId);
 
         collect($contacts)->map(function ($contact) use ($userId) {
-            $countContacts = $this->chatMessageService->getNumberOfUnreadChatMessages($userId, $contact['contact_user2_id']);
+            $countContacts = $this->chatMessageRepository->getNumberOfUnreadChatMessages($userId, $contact['contact_user2_id']);
             $contact['numberOfUnreadChatMessages'] = $countContacts;
         });
 
@@ -42,26 +58,32 @@ class ContactController extends Controller
     public function store(StoreContactRequest $request)
     {
         $data = $request->validated();
-        $userId = Auth::id();
 
-        return $this->contactService->create($data, $userId);
+        $user1Id = Auth::id();
+        $user2Id = $this->userRepository->where('username', $data['username'])->select('id')->first()['id'];
+
+        try {
+            return $this->contactRepository->create(['contact_user1_id' => $user1Id, 'contact_user2_id' => $user2Id, 'name' => $data['name']]);
+        } catch (ContactAlreadyExistsException $excption) {
+            return response()->json($excption->getMessage(), 400);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateContactRequest $request, Contact $contact)
+    public function update(UpdateContactRequest $request, int $id)
     {
         $data = $request->validated();
 
-        return $this->contactService->update($contact, $data);
+        return $this->contactRepository->update($id, $data);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Contact $contact)
+    public function destroy(DeleteContactRequest $request, int $id)
     {
-        return $this->contactService->destroy($contact);
+        return $this->contactRepository->deleteById($id);
     }
 }

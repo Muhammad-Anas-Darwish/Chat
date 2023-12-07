@@ -2,18 +2,26 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
+use App\Models\Contact;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Database\Eloquent\Builder;
 
-class StoreContactRequest extends FormRequest
+class DeleteContactRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return true;
+        // TODO edit this
+        $contactId = $this->route('contact'); // get contact id from route
+        $contact = Contact::findOrFail($contactId); // get contact
+
+        // Check if contact_user1_id is authorized by authorize
+        if ($contact->contact_user1_id === Auth::id())
+            return true;
+
+        return false;
     }
 
     /**
@@ -24,8 +32,7 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => 'required|exists:users,username',
-            'name' => 'required|string|max:64',
+            //
         ];
     }
 }
