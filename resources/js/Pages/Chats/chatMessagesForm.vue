@@ -21,7 +21,7 @@ const submit = () => {
     })
     .then(res => {
         message.value = "";
-        emit('get-messages', '/messages/' + props.selectedContact['contact_user2_id'], true);
+        emit('get-messages');
         console.log(res);
     })
     .catch(error => {

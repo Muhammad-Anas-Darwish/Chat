@@ -10,9 +10,6 @@ const props = defineProps({
     messages: {
         required: true
     },
-    next_page_url: {
-        required: true
-    },
     contact: {
         required: true
     }
@@ -26,10 +23,7 @@ const todayDate = shortFormattedDate(new Date().toISOString());
 const yesterdayDate = shortFormattedDate(new Date(new Date().setDate(new Date().getDate() - 1)).toISOString());
 
 function getNextMessages() {
-    if (props.next_page_url == null)
-        return ;
-
-    emit('get-messages', props.next_page_url);
+    emit('get-messages');
 }
 
 function shortFormattedDate(date) {
@@ -45,10 +39,6 @@ function formattedDate(date) {
         return "Yesterday";
     return date;
 };
-
-onMounted(() => {
-    emit('get-messages', '/messages/' + props.contact['contact_user2_id'], true);
-});
 
 onUpdated(() => {
     // messagesContainer.value.scrollIntoView({ behavior: 'smooth', block: 'end' });

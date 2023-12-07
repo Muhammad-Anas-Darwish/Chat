@@ -11,30 +11,15 @@ const props = defineProps({
     selectedContact: {
         required: true
     },
+    messages: {
+        required: true
+    }
 });
 
-const emit = defineEmits(['reloadContacts', 'toggleContact']);
-
-const messages = ref([]);
-const nextMessagesPage = ref('');
+const emit = defineEmits(['reloadContacts', 'toggleContact', 'getMessages']);
 
 function toggleContact() {
     emit('toggleContact', false)
-}
-
-function getMessages(url, clear = false) {
-    axios.get(url)
-    .then(res => {
-        if (clear)
-            messages.value = res['data']['data']; // clear old messages
-        else
-            messages.value = messages.value.concat(res['data']['data']); // append new messages to old messages
-        nextMessagesPage.value = res['data']['next_page_url'];
-        // console.log(messages.value);
-    })
-    .catch(error => {
-        console.log(error);
-    });
 }
 
 function blockContact() {
@@ -69,9 +54,9 @@ function deleteContact() {
     });
 }
 
-watch(() => props.selectedContact, (newVal, oldVal) => {
-    getMessages('/messages/' + newVal.contact_user2_id, true);
-});
+function getMessages() {
+    emit('getMessages', true);
+}
 </script>
 
 <template>
@@ -140,7 +125,7 @@ watch(() => props.selectedContact, (newVal, oldVal) => {
             Send a message
         </EmptyPageContainer>
         <!-- messages container -->
-        <MessagesContainer v-else @get-messages="getMessages" :next_page_url.sync="nextMessagesPage" :messages.sync="messages" :contact.sync="props.selectedContact" />
+        <MessagesContainer v-else @get-messages="getMessages" :messages.sync="messages" :contact.sync="props.selectedContact" />
     </div>
     <!-- send message form container -->
     <div v-if="!selectedContact['is_blocked_by_me'] && !selectedContact['is_blocking_me']" class="mt-1">

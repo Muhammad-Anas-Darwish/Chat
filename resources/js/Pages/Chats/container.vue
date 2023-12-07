@@ -6,9 +6,10 @@ import EmptyPageContainer from '@/Components/EmptyPageContainer.vue';
 import ChatMessagesContainer from '@/Pages/Chats/ChatMessagesContainer.vue';
 import { ref, onMounted, watch, watchEffect } from 'vue';
 
-
 const contacts = ref(null);
 const selectedContact = ref(false);
+const messages = ref([]);
+const nextMessagesPage = ref('');
 
 function updateChoicesReceiver(value) {
     selectedContact.value = value;
@@ -22,10 +23,32 @@ const getContacts = () => {
     });
 };
 
+const getMessages = (getNextMessages = false) => {
+    if (selectedContact.value['contact_user2_id'] === undefined)
+        return;
+
+    axios.get(route('messages.getMessages', selectedContact.value['contact_user2_id']))
+    .then(res => {
+        if (getNextMessages)
+            messages.value = messages.value.concat(res['data']['data']); // append new messages to old messages
+        else
+            messages.value = res['data']['data']; // clear old messages
+        nextMessagesPage.value = res['data']['next_page_url'];
+    })
+    .catch(error => {
+        console.log(error);
+    });
+}
+
+watch(selectedContact, (newVal, oldVal) => {
+    getMessages(false);
+});
+
 onMounted(() => {
     getContacts();
 });
 
+////////
 
 // const messages = ref([]);
 
@@ -44,13 +67,10 @@ onMounted(() => {
 //     console.log('connect');
 //     if (selectedContact.value['contact_user2_id']) {
 //         console.log('connecting success')
-//         let vm = this;
 //         getMessages('/messages/' + selectedContact.value['contact_user2_id']);
 
 //         window.Echo.private("chat.8").listen('.message.new', e => {
-//             console.log('hiiii');
 //             console.log('+' + e);
-//             vm.getMessages('/messages/' + selectedContact.value['contact_user2_id']);
 //         });
 //     }
 // }
@@ -72,16 +92,10 @@ onMounted(() => {
             <AsideContainer :contacts.sync="contacts" :selected-contact="selectedContact" @update-selected-contact="updateChoicesReceiver" />
 
             <div class="w-full p-1 h-full overflow-x-hidden sm:ml-64">
-                <template v-for="message in messages" :key="message.id">
-                    {{message.message}}
-                    <br>
-                </template>
-
-                <button @click="getMessages('messages/' + selectedContact['contact_user2_id'] )">get</button>
                 <EmptyPageContainer v-if="selectedContact == false" >
                     Select a chat to start messaging
                 </EmptyPageContainer>
-                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" :selected-contact.sync="selectedContact" />
+                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" :selected-contact.sync="selectedContact" :messages.sync="messages" />
             </div>
         </div>
     </AppLayout>
