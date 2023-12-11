@@ -24,8 +24,6 @@ Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -52,19 +50,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('blocks', BlockController::class)->only(['store']);
 });
 
+
+
 Route::middleware([
-        'auth:sanctum',
-        config('jetstream.auth_session'),
-    ])->group(function () {
-        Route::get('/', function () {
-            return Inertia::render('Chats/Container');
-        })->name('chats.container');
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+])->group(function () {
+    Route::get('/chat', function () {
+        return Inertia::render('Chats/Container');
+    })->name('chats.container');
 
-        Route::get('/contacts/create', function () {
-            return Inertia::render('Contacts/Create');
-        })->name('contacts.create');
+    Route::get('/contacts/create', function () {
+        return Inertia::render('Contacts/Create');
+    })->name('contacts.create');
 
-        Route::get('/contacts/edit/{contactId}', function () {
-            return Inertia::render('Contacts/Edit');
-        })->name('contacts.edit');
-    });
+    Route::get('/contacts/edit/{contactId}', function () {
+        return Inertia::render('Contacts/Edit');
+    })->name('contacts.edit');
+});
+
+// Route::get('/', function () {
+//     return Inertia::render('Welcome');
+// })->name('home');

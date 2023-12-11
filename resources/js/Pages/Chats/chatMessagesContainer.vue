@@ -23,7 +23,7 @@ function toggleContact() {
 }
 
 function blockContact() {
-    axios.post('/blocks', {
+    axios.post(route('blocks.store'), {
         'banned_id': props.selectedContact.contact_user2_id,
     })
     .then(res => {
@@ -35,7 +35,7 @@ function blockContact() {
 }
 
 function unBlockContact() {
-    axios.delete('/blocks/' + props.selectedContact.contact_user2_id)
+    axios.delete(route('blocks.destroy', props.selectedContact.contact_user2_id))
     .then(res => {
         console.log(res);
     })
@@ -118,45 +118,21 @@ function getMessages() {
             </Dropdown>
         </div>
     </div>
+
     <!-- main container -->
-    <div class="bg-gray-800 h-full overflow-y-scroll">
+    <div v-if="messages !== null && messages.length === 0" class="bg-gray-800 h-full">
         <!-- empty container -->
-        <EmptyPageContainer v-if="messages.length === 0">
+        <EmptyPageContainer >
             Send a message
         </EmptyPageContainer>
-        <!-- messages container -->
-        <MessagesContainer v-else @get-messages="getMessages" :messages.sync="messages" :contact.sync="props.selectedContact" />
     </div>
+
+    <!-- messages container -->
+    <MessagesContainer v-else @get-messages="getMessages" :messages.sync="messages" :contact.sync="props.selectedContact" />
+
     <!-- send message form container -->
     <div v-if="!selectedContact['is_blocked_by_me'] && !selectedContact['is_blocking_me']" class="mt-1">
         <ChatMessagesForm @get-messages="getMessages" :selected-contact.sync="selectedContact" />
     </div>
 </div>
 </template>
-
-<style>
-/* start scrollbar */
-/* width */
-.overflow-y-scroll::-webkit-scrollbar {
-    width: 3px;
-}
-
-/* Track */
-.overflow-y-scroll::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 1rem;
-}
-
-/* Handle */
-.overflow-y-scroll::-webkit-scrollbar-thumb {
-    --tw-text-opacity: 1;
-    background: rgb(156 163 175 / var(--tw-text-opacity));
-    border-radius: 1rem;
-}
-
-/* Handle on hover */
-.overflow-y-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgb(156 163 175 / var(--tw-text-opacity));
-}
-/* end scrollbar */
-</style>

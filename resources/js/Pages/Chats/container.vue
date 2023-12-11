@@ -12,7 +12,9 @@ const messages = ref([]);
 const nextMessagesPage = ref('');
 
 function updateChoicesReceiver(value) {
+    messages.value = null;
     selectedContact.value = value;
+    getMessages(false);
 }
 
 const getContacts = () => {
@@ -24,15 +26,18 @@ const getContacts = () => {
 };
 
 const getMessages = (getNextMessages = false) => {
-    if (selectedContact.value['contact_user2_id'] === undefined)
-        return;
+    console.log('get messages');
+    if (selectedContact.value['contact_user2_id'] === undefined || getNextMessages && nextMessagesPage.value === null)
+        return ;
 
-    axios.get(route('messages.getMessages', selectedContact.value['contact_user2_id']))
+    let url = (getNextMessages) ? nextMessagesPage.value : route('messages.getMessages', selectedContact.value['contact_user2_id']);
+
+    axios.get(url)
     .then(res => {
         if (getNextMessages)
-            messages.value = messages.value.concat(res['data']['data']); // append new messages to old messages
+            messages.value = res['data']['data'].reverse().concat(messages.value); // append new messages to old messages
         else
-            messages.value = res['data']['data']; // clear old messages
+            messages.value = res['data']['data'].reverse(); // clear old messages
         nextMessagesPage.value = res['data']['next_page_url'];
     })
     .catch(error => {
@@ -40,50 +45,9 @@ const getMessages = (getNextMessages = false) => {
     });
 }
 
-watch(selectedContact, (newVal, oldVal) => {
-    getMessages(false);
-});
-
 onMounted(() => {
     getContacts();
 });
-
-////////
-
-// const messages = ref([]);
-
-// function getMessages(url) {
-//     axios.get(url)
-//     .then(res => {
-//         messages.value = res['data']['data'];
-//         console.log("get messages");
-//     })
-//     .catch(error => {
-//         console.log(error);
-//     });
-// }
-
-// function connect() {
-//     console.log('connect');
-//     if (selectedContact.value['contact_user2_id']) {
-//         console.log('connecting success')
-//         getMessages('/messages/' + selectedContact.value['contact_user2_id']);
-
-//         window.Echo.private("chat.8").listen('.message.new', e => {
-//             console.log('+' + e);
-//         });
-//     }
-// }
-
-// watch(selectedContact, (val, oldVal) => {
-//     console.log('watch');
-//     connect();
-// });
-
-// onMounted(() => {
-//     console.log('mounted');
-//     connect();
-// });
 </script>
 
 <template>
@@ -95,7 +59,7 @@ onMounted(() => {
                 <EmptyPageContainer v-if="selectedContact == false" >
                     Select a chat to start messaging
                 </EmptyPageContainer>
-                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" :selected-contact.sync="selectedContact" :messages.sync="messages" />
+                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" @get-messages="getMessages" :selected-contact.sync="selectedContact" :messages.sync="messages" />
             </div>
         </div>
     </AppLayout>

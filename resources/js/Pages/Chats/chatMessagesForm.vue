@@ -15,7 +15,7 @@ const emit = defineEmits(['get-messages']);
 const message = ref('');
 
 const submit = () => {
-    axios.post('/messages/', {
+    axios.post(route('messages.store'), {
         message: message.value,
         receiver_id: props.selectedContact['contact_user2_id'],
     })
