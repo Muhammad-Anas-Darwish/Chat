@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({
+    user: Map,
     canLogin: Boolean,
     canRegister: Boolean,
 });
@@ -12,7 +13,7 @@ defineProps({
 
     <div class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center bg-gray-100 dark:bg-dots-lighter dark:bg-gray-900 selection:bg-blue-500 selection:text-white">
         <div v-if="canLogin" class="sm:fixed sm:top-0 sm:right-0 p-6 text-right z-10">
-            <Link v-if="$page.props.auth.user" href="route('chats.names')" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-blue-500">Chats</Link>
+            <p v-if="user" class="font-semibold text-gray-600 dark:text-gray-400  focus:outline focus:outline-2 focus:rounded-sm focus:outline-blue-500">{{ user['name'] }}</p>
 
             <template v-else>
                 <Link :href="route('login')" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-blue-500">Log in</Link>

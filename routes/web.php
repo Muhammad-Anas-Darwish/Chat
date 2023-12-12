@@ -6,6 +6,7 @@ use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\ContactController;
 use App\Models\ChatMessage;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -22,6 +23,7 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
+        'user' => Auth::user(),
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
     ]);
@@ -57,7 +59,9 @@ Route::middleware([
     config('jetstream.auth_session'),
 ])->group(function () {
     Route::get('/chat', function () {
-        return Inertia::render('Chats/Container');
+        return Inertia::render('Chats/Container', [
+            'userId' => Auth::id(),
+        ]);
     })->name('chats.container');
 
     Route::get('/contacts/create', function () {

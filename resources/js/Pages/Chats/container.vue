@@ -1,3 +1,4 @@
+use Illuminate\Support\Facades\Auth;
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
@@ -6,6 +7,12 @@ import EmptyPageContainer from '@/Components/EmptyPageContainer.vue';
 import ChatMessagesContainer from '@/Pages/Chats/ChatMessagesContainer.vue';
 import { ref, onMounted, watch, watchEffect } from 'vue';
 
+const props = defineProps({
+    userId: {
+        required: true
+    },
+});
+
 const contacts = ref(null);
 const selectedContact = ref(false);
 const messages = ref([]);
@@ -13,6 +20,7 @@ const nextMessagesPage = ref('');
 
 function updateChoicesReceiver(value) {
     messages.value = null;
+    value['numberOfUnreadChatMessages'] = 0;
     selectedContact.value = value;
     getMessages(false);
 }
@@ -45,6 +53,25 @@ const getMessages = (getNextMessages = false) => {
     });
 }
 
+function connect() {
+    if (selectedContact.value['contact_user2_id']) {
+        console.log('connecting success');
+
+        window.Echo.private("chat." + props.userId).listen('.message.new', e => {
+            messages.value = messages.value.concat(e['chatMessage']);
+        });
+
+        window.Echo.private("contact." + selectedContact.value['id']).listen('.contact.update', e => {
+            selectedContact.value['is_blocked_by_me'] = e['contact']['is_blocked_by_me'];
+            selectedContact.value['is_blocking_me'] = e['contact']['is_blocking_me'];
+        });
+    }
+}
+
+watch(selectedContact, (val, oldVal) => {
+    connect();
+});
+
 onMounted(() => {
     getContacts();
 });
@@ -59,7 +86,7 @@ onMounted(() => {
                 <EmptyPageContainer v-if="selectedContact == false" >
                     Select a chat to start messaging
                 </EmptyPageContainer>
-                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" @get-messages="getMessages" :selected-contact.sync="selectedContact" :messages.sync="messages" />
+                <ChatMessagesContainer v-else @reload-contacts="getContacts" @toggle-contact="updateChoicesReceiver" @get-messages="getMessages" :selected-contact.sync="selectedContact" :messages.sync="messages" :nextMessagesPageURL.sync="nextMessagesPage" />
             </div>
         </div>
     </AppLayout>

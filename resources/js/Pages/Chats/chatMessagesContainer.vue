@@ -13,7 +13,10 @@ const props = defineProps({
     },
     messages: {
         required: true
-    }
+    },
+    nextMessagesPageURL: {
+        required: true
+    },
 });
 
 const emit = defineEmits(['reloadContacts', 'toggleContact', 'getMessages']);
@@ -128,7 +131,7 @@ function getMessages() {
     </div>
 
     <!-- messages container -->
-    <MessagesContainer v-else @get-messages="getMessages" :messages.sync="messages" :contact.sync="props.selectedContact" />
+    <MessagesContainer v-else @get-messages="getMessages" :messages.sync="messages" :contact.sync="props.selectedContact" :nextMessagesPageURL="nextMessagesPageURL" />
 
     <!-- send message form container -->
     <div v-if="!selectedContact['is_blocked_by_me'] && !selectedContact['is_blocking_me']" class="mt-1">

@@ -33,7 +33,7 @@ class ChatController extends Controller
 
         try {
             $message = $this->chatMessageRepository->create($data);
-            broadcast(new NewChatMessage($message))->toOthers();
+            broadcast(new NewChatMessage($message));
             return $message;
         }
         catch (BlockedContactException $excption) {

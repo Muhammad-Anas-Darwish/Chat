@@ -6,19 +6,23 @@ use App\Models\Contact;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\BaseRepository;
 use App\Exceptions\ContactAlreadyExistsException;
+use App\Repositories\Block\BlockRepositoryInterface;
 use App\Repositories\User\UserRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use PHPUnit\TestRunner\TestResult\Collector;
 
 class ContactRepository extends BaseRepository implements ContactRepositoryInterface
 {
     protected $model;
     protected $userRepository;
+    protected $blockRepository;
 
-    public function __construct(Contact $model, UserRepositoryInterface $userRepository)
+    public function __construct(Contact $model, UserRepositoryInterface $userRepository, BlockRepositoryInterface $blockRepository)
     {
         $this->model = $model;
         $this->userRepository = $userRepository;
+        $this->blockRepository = $blockRepository;
     }
 
     /**
@@ -47,9 +51,11 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
             ->get();
     }
 
-    public function getContact(int $user1Id, int $user2Id): Collection
+    public function getContact(int $user1Id, int $user2Id): Model
     {
-        return $this->model->where('contact_user1_id', $user1Id)->where('contact_user2_id', $user2Id)->get();
+        return $this->model->where('contact_user1_id', $user1Id)
+            ->where('contact_user2_id', $user2Id)
+            ->first();
     }
 
     public function create(array $data): ?Model
@@ -60,10 +66,5 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
             throw new ContactAlreadyExistsException();
 
         return parent::create($data);
-        // return Contact::create([
-        //     'contact_user1_id' => $data['contact_user1_id'],
-        //     'contact_user2_id' => $data['contact_user2_id'],
-        //     'name' => $data['name'] ?? $this->userRepository->find($data['contact_user2_id']),
-        // ]);
     }
 }

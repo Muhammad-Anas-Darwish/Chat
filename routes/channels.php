@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Contact;
+use Illuminate\Broadcasting\Channel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -20,4 +22,10 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 
 Broadcast::channel('chat.{receiver_id}', function ($user) {
     return Auth::check();
+});
+
+Broadcast::channel('contact.{contact_id}', function ($user, $contactId) {
+    $contact = Contact::find($contactId);
+
+    return ($contact['contact_user1_id'] == Auth::id());
 });

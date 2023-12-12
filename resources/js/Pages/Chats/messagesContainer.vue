@@ -12,7 +12,10 @@ const props = defineProps({
     },
     contact: {
         required: true
-    }
+    },
+    nextMessagesPageURL: {
+        required: true
+    },
 });
 
 const emit = defineEmits(['get-messages']);
@@ -60,18 +63,18 @@ watch(() => props.messages, (newMessages, oldMessages) => {
         <div class="flex flex-col justify-end gap-2 p-2">
             <MessagesSkeleton v-if="messages === null" />
             <template v-else>
-                <CenterMessage v-if="props.contact['is_blocked_by_me']">You blocked this contact.</CenterMessage>
-                <CenterMessage v-else-if="props.contact['is_blocking_me'] === 1">You blocked from this contact.</CenterMessage>
-
-                <InfiniteLoading @infinite="getNextMessages"/>
+                <InfiniteLoading v-if="nextMessagesPageURL" @infinite="getNextMessages"/>
 
                 <template v-for="(message, index) in messages" :key="message.id">
                     <template v-if="index === 0 || shortFormattedDate(message.created_at) !== shortFormattedDate(messages[index - 1].created_at)">
                         <CenterMessage>{{ formattedDate(message.created_at) }}</CenterMessage>
                     </template>
-                    <Message v-if="contact['contact_user2_id'] === message.sender_id" color="bg-blue-500" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
-                    <Message v-else color="bg-green-700" classes="ml-auto" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
+                    <Message v-if="contact['contact_user2_id'] === message.sender_id" color="bg-gray-700" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
+                    <Message v-else color="bg-gray-500" classes="ml-auto" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
                 </template>
+
+                <CenterMessage v-if="props.contact['is_blocked_by_me']">You blocked this contact.</CenterMessage>
+                <CenterMessage v-else-if="props.contact['is_blocking_me']">You blocked from this contact.</CenterMessage>
             </template>
         </div>
     </div>

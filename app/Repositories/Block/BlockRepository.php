@@ -5,7 +5,6 @@ namespace App\Repositories\Block;
 use App\Models\Block;
 use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class BlockRepository extends BaseRepository implements BlockRepositoryInterface
 {
@@ -42,8 +41,8 @@ class BlockRepository extends BaseRepository implements BlockRepositoryInterface
         return $this->find($blockerId, $bannedId)->delete();
     }
 
-    public function isBlocked(int $senderId, int $receiverId): ?bool
+    public function isBlocked(int $blockerId, int $bannedId): ?bool
     {
-        return ($this->find($senderId, $receiverId) !== null);
+        return ($this->find($blockerId, $bannedId) !== null);
     }
 }

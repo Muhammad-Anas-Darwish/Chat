@@ -7,7 +7,9 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 use App\Events\NewChatMessage;
+use App\Events\UpdateContact;
 use App\Listeners\SendChatMessageNotification;
+use App\Listeners\SendUpdateContactNotification;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         NewChatMessage::class => [
             SendChatMessageNotification::class,
+        ],
+        UpdateContact::class => [
+            SendUpdateContactNotification::class,
         ]
     ];
 
