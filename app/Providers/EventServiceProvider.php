@@ -8,8 +8,10 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Events\NewChatMessage;
 use App\Events\UpdateContact;
+use App\Events\ReadMessage;
 use App\Listeners\SendChatMessageNotification;
 use App\Listeners\SendUpdateContactNotification;
+use App\Listeners\SendReadMessageNotification;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -27,7 +29,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         UpdateContact::class => [
             SendUpdateContactNotification::class,
-        ]
+        ],
+        ReadMessage::class => [
+            SendReadMessageNotification::class,
+        ],
     ];
 
     /**

@@ -1,4 +1,3 @@
-use Illuminate\Support\Facades\Auth;
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link } from '@inertiajs/vue3';
@@ -20,7 +19,8 @@ const nextMessagesPage = ref('');
 
 function updateChoicesReceiver(value) {
     messages.value = null;
-    value['numberOfUnreadChatMessages'] = 0;
+    if (value)
+        value['numberOfUnreadChatMessages'] = 0;
     selectedContact.value = value;
     getMessages(false);
 }
@@ -34,7 +34,6 @@ const getContacts = () => {
 };
 
 const getMessages = (getNextMessages = false) => {
-    console.log('get messages');
     if (selectedContact.value['contact_user2_id'] === undefined || getNextMessages && nextMessagesPage.value === null)
         return ;
 
@@ -57,10 +56,28 @@ function connect() {
     if (selectedContact.value['contact_user2_id']) {
         console.log('connecting success');
 
+        // listen to new message
         window.Echo.private("chat." + props.userId).listen('.message.new', e => {
             messages.value = messages.value.concat(e['chatMessage']);
+
+            // mark message as read
+            if (e['chatMessage']['sender_id'] == selectedContact.value['contact_user2_id'])
+                axios.get(route('messages.read', e['chatMessage']['id']));
         });
 
+        // listen to read message
+        window.Echo.private("contact." + selectedContact.value['id']).listen('.message.read', e =>  {
+            let messageId = e['data']['messageId'];
+
+            for (let i = messages.value.length - 1; i >= 0; --i) { // update message status for a read message
+                if (messages.value[i]['id'] == messageId) {
+                    messages.value[i]['status'] = 'read';
+                    break;
+                }
+            }
+        });
+
+        // listen to new contact updates
         window.Echo.private("contact." + selectedContact.value['id']).listen('.contact.update', e => {
             selectedContact.value['is_blocked_by_me'] = e['contact']['is_blocked_by_me'];
             selectedContact.value['is_blocking_me'] = e['contact']['is_blocking_me'];
@@ -91,33 +108,3 @@ onMounted(() => {
         </div>
     </AppLayout>
 </template>
-
-
-
-
-<style>
-/* start scrollbar */
-/* width */
-.overflow-y-scroll::-webkit-scrollbar {
-    width: 3px;
-}
-
-/* Track */
-.overflow-y-scroll::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 1rem;
-}
-
-/* Handle */
-.overflow-y-scroll::-webkit-scrollbar-thumb {
-    --tw-text-opacity: 1;
-    background: rgb(156 163 175 / var(--tw-text-opacity));
-    border-radius: 1rem;
-}
-
-/* Handle on hover */
-.overflow-y-scroll::-webkit-scrollbar-thumb:hover {
-    background: rgb(156 163 175 / var(--tw-text-opacity));
-}
-/* end scrollbar */
-</style>

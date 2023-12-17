@@ -42,6 +42,7 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/messages/{user2Id:int}', [ChatController::class, 'getMessages'])->name('messages.getMessages');
     Route::post('/messages', [ChatController::class, 'createNewMessage'])->name('messages.store');
+    Route::get('/messages/read/{id}', [ChatController::class, 'markMessageAsRead'])->name('messages.read');
 
     Route::get('/contacts/{id}', [ContactController::class, 'getContact'])->name('contacts.getContact')->where('id', '[0-9]+');
     Route::get('/contacts', [ContactController::class, 'getContacts'])->name('contacts.getContacts');

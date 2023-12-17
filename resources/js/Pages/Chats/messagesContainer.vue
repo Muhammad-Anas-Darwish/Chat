@@ -2,7 +2,7 @@
 import MessagesSkeleton from '@/Pages/Chats/Skeletons/MessagesSkeleton.vue';
 import CenterMessage from '@/Pages/Chats/Parts/CenterMessage.vue';
 import Message from '@/Components/Message.vue';
-import { ref, onMounted, watch, onUpdated, computed, onBeforeUpdate } from 'vue';
+import { ref, onMounted, watch, onUpdated, computed, nextTick, onBeforeUpdate } from 'vue';
 import InfiniteLoading from "v3-infinite-loading";
 import "v3-infinite-loading/lib/style.css";
 
@@ -45,15 +45,30 @@ function formattedDate(date) {
 };
 
 onBeforeUpdate(() => {
-    scrollHeight.value = messagesContainer.value.scrollHeight;
+    nextTick(() => {
+        scrollHeight.value = messagesContainer.value.scrollHeight;
+        console.log('hy');
+        console.log(scrollHeight.value);
+    });
 });
 
 watch(() => props.messages, (newMessages, oldMessages) => {
     if (oldMessages === null || newMessages === null) {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        console.log('hi');
+        messagesContainer.value.scrollTop = 100;
+        setTimeout(() => {
+            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+        }, 30);
     }
     else {
-        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight - scrollHeight.value - messagesContainer.value.scrollTop;
+        nextTick(() => {
+            console.log('hu');
+            console.log(`mScH: ${messagesContainer.value.scrollHeight}`);
+            console.log(`ScH: ${scrollHeight.value}`);
+            console.log(`mScT: ${messagesContainer.value.scrollTop}`);
+            messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight - scrollHeight.value + messagesContainer.value.scrollTop;
+            console.log(`mScT: ${messagesContainer.value.scrollTop}`);
+        });
     }
 });
 </script>
@@ -63,14 +78,16 @@ watch(() => props.messages, (newMessages, oldMessages) => {
         <div class="flex flex-col justify-end gap-2 p-2">
             <MessagesSkeleton v-if="messages === null" />
             <template v-else>
-                <InfiniteLoading v-if="nextMessagesPageURL" @infinite="getNextMessages"/>
+                <div class="w-full">
+                    <InfiniteLoading class="mx-auto" v-if="nextMessagesPageURL" @infinite="getNextMessages"/>
+                </div>
 
                 <template v-for="(message, index) in messages" :key="message.id">
                     <template v-if="index === 0 || shortFormattedDate(message.created_at) !== shortFormattedDate(messages[index - 1].created_at)">
                         <CenterMessage>{{ formattedDate(message.created_at) }}</CenterMessage>
                     </template>
                     <Message v-if="contact['contact_user2_id'] === message.sender_id" color="bg-gray-700" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
-                    <Message v-else color="bg-gray-500" classes="ml-auto" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`"></Message>
+                    <Message v-else color="bg-gray-500" classes="ml-auto" :message="message.message" :time="`${new Date(message.created_at).getHours()}:${new Date(message.created_at).getMinutes()}`" :status="message.status"></Message>
                 </template>
 
                 <CenterMessage v-if="props.contact['is_blocked_by_me']">You blocked this contact.</CenterMessage>
@@ -79,7 +96,6 @@ watch(() => props.messages, (newMessages, oldMessages) => {
         </div>
     </div>
 </template>
-
 
 <style>
     /* start scrollbar */

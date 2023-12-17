@@ -62,7 +62,7 @@ class ContactRepository extends BaseRepository implements ContactRepositoryInter
     {
         // if is exisit
         $contact = $this->getContact($data['contact_user1_id'], $data['contact_user2_id']);
-        if (!$contact->isEmpty())
+        if ($contact)
             throw new ContactAlreadyExistsException();
 
         return parent::create($data);
